@@ -55,6 +55,11 @@
   :type 'string
   :group 'germanium)
 
+(defcustom germanium-check-options-each-execute-command t
+  "Set Whether to check options each time the command is executed."
+  :type 'boolean
+  :group 'germanium)
+
 (defun germanium--build-command-options-string (&rest args)
   "Build germanium command options string from ARGS.
 
@@ -116,7 +121,13 @@ Output file name is based on FILE-PATH default."
                    (contents
                     (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end))))
              (let* ((command-string
-                     (germanium--build-exec-command file-path contents (germanium--build-command-options-string))))
+                     (if germanium-check-options-each-execute-command
+                         (let ((show-line-number (yes-or-no-p "Add line number? "))
+                               (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
+                           (germanium--build-exec-command file-path contents
+                                                          (germanium--build-command-options-string :line-number show-line-number
+                                                                                                   :window-access-bar show-window-access-bar)))
+                        (germanium--build-exec-command file-path contents (germanium--build-command-options-string)))))
                (if (not (= 0 (shell-command command-string)))
                    (error "Failed to generate image from region"))))
       (error "Need to select region"))))
@@ -130,7 +141,13 @@ Output file name is based on FILE-PATH default."
     (if-let* ((file-name (buffer-file-name))
               (file-path (expand-file-name file-name)))
         (let* ((command-string
-                (germanium--build-exec-command file-path nil (germanium--build-command-options-string))))
+                (if germanium-check-options-each-execute-command
+                         (let ((show-line-number (yes-or-no-p "Add line number? "))
+                               (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
+                           (germanium--build-exec-command file-path nil
+                                                          (germanium--build-command-options-string :line-number show-line-number
+                                                                                                   :window-access-bar show-window-access-bar)))
+                        (germanium--build-exec-command file-path nil (germanium--build-command-options-string)))))
           (message command-string)
           (if (not (= 0 (shell-command command-string)))
               (error "Failed to generate image from buffer")))
