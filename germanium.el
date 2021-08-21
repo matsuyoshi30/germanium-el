@@ -196,7 +196,6 @@ Output file name is based on FILE-PATH default."
                                                                                                    :line-number show-line-number
                                                                                                    :window-access-bar show-window-access-bar)))
                         (germanium--build-exec-command file-path nil (germanium--build-command-options-string)))))
-          (message command-string)
           (if (not (= 0 (shell-command command-string)))
               (error "Failed to generate image from buffer")))
     (error "Current buffer is not associated with any file"))))
