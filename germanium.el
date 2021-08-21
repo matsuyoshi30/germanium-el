@@ -60,6 +60,23 @@
   :type 'boolean
   :group 'germanium)
 
+(defcustom germanium-completion-function 'ido-completing-read
+  "Function to use for completion.
+
+Function needs to have a signature similar to `ido-completing-read', for example `ivy-completing-read'."
+  :type 'function
+  :group 'germanium)
+
+(defvar germanium-available-styles nil
+  "List of available germanium styles.")
+
+(when (commandp germanium-executable-path)
+  (setq-default germanium-available-styles
+                (split-string (shell-command-to-string
+                               (mapconcat #'shell-quote-argument
+                                          (list germanium-executable-path "--list-styles")
+                                          " ")))))
+
 (defun germanium--build-command-options-string (&rest args)
   "Build germanium command options string from ARGS.
 
@@ -122,10 +139,18 @@ Output file name is based on FILE-PATH default."
                     (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end))))
              (let* ((command-string
                      (if germanium-check-options-each-execute-command
-                         (let ((show-line-number (yes-or-no-p "Add line number? "))
+                         (let ((style
+                                (funcall germanium-completion-function
+                                         "Style: "
+                                         germanium-available-styles
+                                         nil
+                                         (not (null germanium-available-styles))
+                                         germanium-default-style))
+                               (show-line-number (yes-or-no-p "Add line number? "))
                                (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
                            (germanium--build-exec-command file-path contents
-                                                          (germanium--build-command-options-string :line-number show-line-number
+                                                          (germanium--build-command-options-string :style style
+                                                                                                   :line-number show-line-number
                                                                                                    :window-access-bar show-window-access-bar)))
                         (germanium--build-exec-command file-path contents (germanium--build-command-options-string)))))
                (if (not (= 0 (shell-command command-string)))
@@ -142,10 +167,18 @@ Output file name is based on FILE-PATH default."
               (file-path (expand-file-name file-name)))
         (let* ((command-string
                 (if germanium-check-options-each-execute-command
-                         (let ((show-line-number (yes-or-no-p "Add line number? "))
+                         (let ((style
+                                (funcall germanium-completion-function
+                                         "Style: "
+                                         germanium-available-styles
+                                         nil
+                                         (not (null germanium-available-styles))
+                                         germanium-default-style))
+                               (show-line-number (yes-or-no-p "Add line number? "))
                                (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
                            (germanium--build-exec-command file-path nil
-                                                          (germanium--build-command-options-string :line-number show-line-number
+                                                          (germanium--build-command-options-string :style style
+                                                                                                   :line-number show-line-number
                                                                                                    :window-access-bar show-window-access-bar)))
                         (germanium--build-exec-command file-path nil (germanium--build-command-options-string)))))
           (message command-string)
