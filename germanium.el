@@ -42,10 +42,8 @@
 
 (defun germanium--exec-command (file-path file-contents)
   "Build germanium execute command.  Output filename is based on FILE-PATH or FILE-CONTENTS."
-  (let* ((output
-          (concat (file-name-base file-path) ".png"))
-         (base-exec-command (list germanium-executable-path
-                                  "--output" output)))
+  (let ((output
+          (concat (file-name-base file-path) ".png")))
     (if file-contents
         (mapconcat #'identity
                    (list "echo"
@@ -56,8 +54,9 @@
                            "-l" (file-name-extension file-path))
                    " ")
         (mapconcat #'shell-quote-argument
-                   (append base-exec-command
-                           file-path)
+                   (list germanium-executable-path
+                         "--output" output
+                         file-path)
                    " "))))
 
 (defun germanium-region-to-png (start end)
