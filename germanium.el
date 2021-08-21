@@ -68,7 +68,7 @@ Supported options are `:line-number', `:window-access-bar' and `style'"
                                 ,(when style (format "--style=%s" style))))))
     (mapconcat #'identity options " ")))
 
-(defun germanium--exec-command (file-path contents options)
+(defun germanium--build-exec-command (file-path contents options)
   "Build germanium execute command from FILE-PATH or CONTENTS with OPTIONS.
 
 Output file name is based on FILE-PATH default."
@@ -115,7 +115,7 @@ Output file name is based on FILE-PATH default."
                    (contents
                     (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end))))
              (let* ((command-string
-                     (germanium--exec-command file-path contents (germanium--build-command-options-string))))
+                     (germanium--build-exec-command file-path contents (germanium--build-command-options-string))))
                (if (not (= 0 (shell-command command-string)))
                    (error "Failed to generate image from region"))))
       (error "Need to select region"))))
@@ -129,7 +129,7 @@ Output file name is based on FILE-PATH default."
     (if-let* ((file-name (buffer-file-name))
               (file-path (expand-file-name file-name)))
         (let* ((command-string
-                (germanium--exec-command file-path nil (germanium--build-command-options-string))))
+                (germanium--build-exec-command file-path nil (germanium--build-command-options-string))))
           (message command-string)
           (if (not (= 0 (shell-command command-string)))
               (error "Failed to generate image from buffer")))
