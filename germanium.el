@@ -59,14 +59,13 @@
   "Build germanium command options string from ARGS.
 
 Supported options are `:line-number', `:window-access-bar' and `style'"
-  (let* ((show-line-number (or (plist-get args :line-number) germanium-show-line-number))
-         (show-window-access-bar (or (plist-get args :window-access-bar) germanium-show-window-access-bar))
-         (style (or (plist-get args :style) germanium-default-style))
-         (options (seq-remove #'null
-                              `(,(when (not show-line-number) "--no-line-number")
-                                ,(when (not show-window-access-bar) "--no-window-access-bar")
-                                ,(when style (format "--style=%s" style))))))
-    (mapconcat #'identity options " ")))
+  (let* ((show-line-number (and (plist-get args :line-number) germanium-show-line-number))
+         (show-window-access-bar (and (plist-get args :window-access-bar) germanium-show-window-access-bar))
+         (style (or (plist-get args :style) germanium-default-style)))
+    (seq-remove #'null
+                `(,(when (not show-line-number) "--no-line-number")
+                  ,(when (not show-window-access-bar) "--no-window-access-bar")
+                  ,(when style (format "--style=%s" style))))))
 
 (defun germanium--build-exec-command (file-path contents options)
   "Build germanium execute command from FILE-PATH or CONTENTS with OPTIONS.
@@ -76,20 +75,22 @@ Output file name is based on FILE-PATH default."
           (concat (file-name-base file-path) ".png")))
     (if contents
         (mapconcat #'identity
-                   (list "echo"
-                           (shell-quote-argument contents)
-                           "|"
-                           germanium-executable-path
-                           "--output" output
-                           options
-                           "-l" (file-name-extension file-path))
+                   (append
+                    (list "echo"
+                          (shell-quote-argument contents)
+                          "|"
+                          germanium-executable-path
+                          "--output" output
+                          "-l" (file-name-extension file-path))
+                    options)
                    " ")
-        (mapconcat #'shell-quote-argument
-                   (list germanium-executable-path
-                         "--output" output
-                         options
-                         file-path)
-                   " "))))
+      (mapconcat #'shell-quote-argument
+                 (append
+                  (list germanium-executable-path
+                        "--output" output
+                        file-path)
+                  options)
+                 " "))))
 
 ;;;###autoload
 (defun germanium-install ()
