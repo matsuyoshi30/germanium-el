@@ -40,6 +40,11 @@
   :type 'string
   :group 'germanium)
 
+(defcustom germanium-background-color "#aaaaff"
+  "Set background color to resulting PNG by default."
+  :type 'string
+  :group 'germanium)
+
 (defcustom germanium-show-line-number t
   "Add line numbers to resulting PNG by default."
   :type 'boolean
@@ -81,12 +86,14 @@ Function needs to have a signature similar to `ido-completing-read', for example
   "Build germanium command options string from ARGS.
 
 Supported options are `:line-number', `:window-access-bar' and `style'"
-  (let* ((show-line-number (and (plist-get args :line-number) germanium-show-line-number))
+  (let* ((background-color (or (plist-get args :background-color) germanium-background-color))
+         (show-line-number (and (plist-get args :line-number) germanium-show-line-number))
          (show-window-access-bar (and (plist-get args :window-access-bar) germanium-show-window-access-bar))
          (style (or (plist-get args :style) germanium-default-style)))
     (seq-remove #'null
                 `(,(when (not show-line-number) "--no-line-number")
                   ,(when (not show-window-access-bar) "--no-window-access-bar")
+                  ,(when background-color (format "--background=%s" background-color))
                   ,(when style (format "--style=%s" style))))))
 
 (defun germanium--build-exec-command (file-path contents options)
@@ -146,10 +153,14 @@ Output file name is based on FILE-PATH default."
                                          nil
                                          (not (null germanium-available-styles))
                                          germanium-default-style))
+                               (background-color
+                                (read-string "Background color (RGB): "
+                                             germanium-background-color))
                                (show-line-number (yes-or-no-p "Add line number? "))
                                (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
                            (germanium--build-exec-command file-path contents
                                                           (germanium--build-command-options-string :style style
+                                                                                                   :background-color background-color
                                                                                                    :line-number show-line-number
                                                                                                    :window-access-bar show-window-access-bar)))
                         (germanium--build-exec-command file-path contents (germanium--build-command-options-string)))))
@@ -174,10 +185,14 @@ Output file name is based on FILE-PATH default."
                                          nil
                                          (not (null germanium-available-styles))
                                          germanium-default-style))
+                               (background-color
+                                (read-string "Background color (RGB): "
+                                             germanium-background-color))
                                (show-line-number (yes-or-no-p "Add line number? "))
                                (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
                            (germanium--build-exec-command file-path nil
                                                           (germanium--build-command-options-string :style style
+                                                                                                   :background-color background-color
                                                                                                    :line-number show-line-number
                                                                                                    :window-access-bar show-window-access-bar)))
                         (germanium--build-exec-command file-path nil (germanium--build-command-options-string)))))
