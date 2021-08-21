@@ -16,6 +16,10 @@
 
    You can generate image from current buffer file via =M-x germanium-buffer-to-png=.
 
+** germanium-region-to-png
+
+   You can generate image from region via =M-x germanium-region-to-png=. You need to select region.
+
 * License
 
   General Public License Version 3 (GPLv3)

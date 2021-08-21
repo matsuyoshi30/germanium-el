@@ -40,15 +40,43 @@
   :type 'string
   :group 'germanium)
 
-(defun germanium--exec-command (file-path)
-  "Build germanium execute command.  Output filename is based on FILE-PATH."
-  (let ((output
-         (concat (file-name-base file-path) ".png")))
-    (mapconcat #'shell-quote-argument
-               (list germanium-executable-path
-                     "--output" output
-                     file-path)
-               " ")))
+(defun germanium--exec-command (file-path file-contents)
+  "Build germanium execute command.  Output filename is based on FILE-PATH or FILE-CONTENTS."
+  (let* ((output
+          (concat (file-name-base file-path) ".png"))
+         (base-exec-command (list germanium-executable-path
+                                  "--output" output)))
+    (if file-contents
+        (mapconcat #'identity
+                   (list "echo"
+                           (shell-quote-argument file-contents)
+                           "|"
+                           germanium-executable-path
+                           "--output" output
+                           "-l" (file-name-extension file-path))
+                   " ")
+        (mapconcat #'shell-quote-argument
+                   (append base-exec-command
+                           file-path)
+                   " "))))
+
+(defun germanium-region-to-png (start end)
+  "Generate a PNG file from current region between START and END."
+  (interactive (if (use-region-p)
+                   (list (region-beginning) (region-end))
+                 (list nil nil)))
+  (if (not (commandp germanium-executable-path))
+      (error "`germanium' executable path not found")
+    (if (and start end)
+         (if-let* ((file-name (buffer-file-name))
+                   (file-path (expand-file-name file-name))
+                   (contents (buffer-substring-no-properties start end)))
+             (let* ((command-string
+                     (germanium--exec-command file-path contents)))
+               (message command-string)
+               (compile command-string)))
+      (error "Need to select region"))
+    (error "Current buffer is not associated with any file")))
 
 (defun germanium-buffer-to-png ()
   "Generate a PNG file from current buffer."
@@ -58,7 +86,7 @@
     (if-let* ((file-name (buffer-file-name))
               (file-path (expand-file-name file-name)))
         (let* ((command-string
-                (germanium--exec-command file-path)))
+                (germanium--exec-command file-path nil)))
           (compile command-string))
     (error "Current buffer is not associated with any file"))))
 
