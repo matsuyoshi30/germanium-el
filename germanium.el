@@ -72,7 +72,8 @@
                    (contents (buffer-substring-no-properties start end)))
              (let* ((command-string
                      (germanium--exec-command file-path contents)))
-               (compile command-string)))
+               (shell-command-to-string command-string)
+               (message "Generated image")))
       (error "Need to select region"))
     (error "Current buffer is not associated with any file")))
 
@@ -85,7 +86,8 @@
               (file-path (expand-file-name file-name)))
         (let* ((command-string
                 (germanium--exec-command file-path nil)))
-          (compile command-string))
+          (shell-command-to-string command-string)
+          (message "Generated image"))
     (error "Current buffer is not associated with any file"))))
 
 (provide 'germanium)
