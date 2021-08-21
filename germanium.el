@@ -40,8 +40,36 @@
   :type 'string
   :group 'germanium)
 
-(defun germanium--exec-command (file-path contents)
-  "Build germanium execute command from FILE-PATH or CONTENTS.
+(defcustom germanium-show-line-number t
+  "Add line numbers to resulting PNG by default."
+  :type 'boolean
+  :group 'germanium)
+
+(defcustom germanium-show-window-access-bar t
+  "Add window access bar to the resulting PNG by default."
+  :type 'boolean
+  :group 'germanium)
+
+(defcustom germanium-default-style "dracula"
+  "Set default style for generated PNG."
+  :type 'string
+  :group 'germanium)
+
+(defun germanium--build-command-options-string (&rest args)
+  "Build germanium command options string from ARGS.
+
+Supported options are `:line-number', `:window-access-bar' and `style'"
+  (let* ((show-line-number (or (plist-get args :line-number) germanium-show-line-number))
+         (show-window-access-bar (or (plist-get args :window-access-bar) germanium-show-window-access-bar))
+         (style (or (plist-get args :style) germanium-default-style))
+         (options (seq-remove #'null
+                              `(,(when (not show-line-number) "--no-line-number")
+                                ,(when (not show-window-access-bar) "--no-window-access-bar")
+                                ,(when style (format "--style=%s" style))))))
+    (mapconcat #'identity options " ")))
+
+(defun germanium--exec-command (file-path contents options)
+  "Build germanium execute command from FILE-PATH or CONTENTS with OPTIONS.
 
 Output file name is based on FILE-PATH default."
   (let ((output
@@ -53,11 +81,13 @@ Output file name is based on FILE-PATH default."
                            "|"
                            germanium-executable-path
                            "--output" output
+                           options
                            "-l" (file-name-extension file-path))
                    " ")
         (mapconcat #'shell-quote-argument
                    (list germanium-executable-path
                          "--output" output
+                         options
                          file-path)
                    " "))))
 
@@ -85,9 +115,9 @@ Output file name is based on FILE-PATH default."
                    (contents
                     (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end))))
              (let* ((command-string
-                     (germanium--exec-command file-path contents)))
+                     (germanium--exec-command file-path contents (germanium--build-command-options-string))))
                (if (not (= 0 (shell-command command-string)))
-                   (error "Failed to generate image"))))
+                   (error "Failed to generate image from region"))))
       (error "Need to select region"))))
 
 ;;;###autoload
@@ -99,9 +129,10 @@ Output file name is based on FILE-PATH default."
     (if-let* ((file-name (buffer-file-name))
               (file-path (expand-file-name file-name)))
         (let* ((command-string
-                (germanium--exec-command file-path nil)))
+                (germanium--exec-command file-path nil (germanium--build-command-options-string))))
+          (message command-string)
           (if (not (= 0 (shell-command command-string)))
-              (error "Failed to generate image")))
+              (error "Failed to generate image from buffer")))
     (error "Current buffer is not associated with any file"))))
 
 (provide 'germanium)
