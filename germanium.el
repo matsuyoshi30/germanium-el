@@ -40,14 +40,16 @@
   :type 'string
   :group 'germanium)
 
-(defun germanium--exec-command (file-path file-contents)
-  "Build germanium execute command.  Output filename is based on FILE-PATH or FILE-CONTENTS."
+(defun germanium--exec-command (file-path contents)
+  "Build germanium execute command from FILE-PATH or CONTENTS.
+
+Output file name is based on FILE-PATH default."
   (let ((output
           (concat (file-name-base file-path) ".png")))
-    (if file-contents
+    (if contents
         (mapconcat #'identity
                    (list "echo"
-                           (shell-quote-argument file-contents)
+                           (shell-quote-argument contents)
                            "|"
                            germanium-executable-path
                            "--output" output
