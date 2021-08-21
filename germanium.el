@@ -73,7 +73,6 @@
                    (contents (buffer-substring-no-properties start end)))
              (let* ((command-string
                      (germanium--exec-command file-path contents)))
-               (message command-string)
                (compile command-string)))
       (error "Need to select region"))
     (error "Current buffer is not associated with any file")))
