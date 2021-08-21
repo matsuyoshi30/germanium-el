@@ -121,6 +121,31 @@ Output file name is based on FILE-PATH default."
                   options)
                  " "))))
 
+(defun germanium--exec-command (file-path contents)
+  "Execute germanium command with FILE-PATH and CONTENTS."
+  (interactive)
+  (let ((command-string
+          (if germanium-check-options-each-execute-command
+              (let ((style
+                     (funcall germanium-completion-function
+                              "Style: "
+                              germanium-available-styles
+                              nil
+                              (not (null germanium-available-styles))
+                              germanium-default-style))
+                    (background-color
+                     (read-string "Background color (RGB): "
+                                  germanium-background-color))
+                    (show-line-number (yes-or-no-p "Add line number? "))
+                    (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
+                (germanium--build-exec-command file-path contents
+                                               (germanium--build-command-options-string :style style
+                                                                                        :background-color background-color
+                                                                                        :line-number show-line-number
+                                                                                        :window-access-bar show-window-access-bar)))
+            (germanium--build-exec-command file-path contents (germanium--build-command-options-string)))))
+    (shell-command command-string)))
+
 ;;;###autoload
 (defun germanium-install ()
   "Install `germanium' via `go'."
@@ -144,29 +169,8 @@ Output file name is based on FILE-PATH default."
                    (file-path (expand-file-name file-name))
                    (contents
                     (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end))))
-             (let* ((command-string
-                     (if germanium-check-options-each-execute-command
-                         (let ((style
-                                (funcall germanium-completion-function
-                                         "Style: "
-                                         germanium-available-styles
-                                         nil
-                                         (not (null germanium-available-styles))
-                                         germanium-default-style))
-                               (background-color
-                                (read-string "Background color (RGB): "
-                                             germanium-background-color))
-                               (show-line-number (yes-or-no-p "Add line number? "))
-                               (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
-                           (germanium--build-exec-command file-path contents
-                                                          (germanium--build-command-options-string :style style
-                                                                                                   :background-color background-color
-                                                                                                   :line-number show-line-number
-                                                                                                   :window-access-bar show-window-access-bar)))
-                        (germanium--build-exec-command file-path contents (germanium--build-command-options-string)))))
-               (if (not (= 0 (shell-command command-string)))
-                   (error "Failed to generate image from region"))))
-      (error "Need to select region"))))
+             (germanium--exec-command file-path contents)
+           (error "Need to select region")))))
 
 ;;;###autoload
 (defun germanium-buffer-to-png ()
@@ -176,29 +180,8 @@ Output file name is based on FILE-PATH default."
       (error "`germanium' executable path not found")
     (if-let* ((file-name (buffer-file-name))
               (file-path (expand-file-name file-name)))
-        (let* ((command-string
-                (if germanium-check-options-each-execute-command
-                         (let ((style
-                                (funcall germanium-completion-function
-                                         "Style: "
-                                         germanium-available-styles
-                                         nil
-                                         (not (null germanium-available-styles))
-                                         germanium-default-style))
-                               (background-color
-                                (read-string "Background color (RGB): "
-                                             germanium-background-color))
-                               (show-line-number (yes-or-no-p "Add line number? "))
-                               (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
-                           (germanium--build-exec-command file-path nil
-                                                          (germanium--build-command-options-string :style style
-                                                                                                   :background-color background-color
-                                                                                                   :line-number show-line-number
-                                                                                                   :window-access-bar show-window-access-bar)))
-                        (germanium--build-exec-command file-path nil (germanium--build-command-options-string)))))
-          (if (not (= 0 (shell-command command-string)))
-              (error "Failed to generate image from buffer")))
-    (error "Current buffer is not associated with any file"))))
+        (germanium--exec-command file-path nil)
+      (error "Current buffer is not associated with any file"))))
 
 (provide 'germanium)
 ;;; germanium.el ends here
