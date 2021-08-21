@@ -44,10 +44,11 @@
   "Build germanium execute command.  Output filename is based on FILE-PATH."
   (let ((output
          (concat (file-name-base file-path) ".png")))
-    (string-join `(,germanium-executable-path
-                   ,(format "--output '%s'" output)
-                   ,file-path)
-                 " ")))
+    (mapconcat #'shell-quote-argument
+               (list germanium-executable-path
+                     "--output" output
+                     file-path)
+               " ")))
 
 (defun germanium-buffer-to-png ()
   "Generate a PNG file from current buffer."
