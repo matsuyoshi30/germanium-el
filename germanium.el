@@ -62,6 +62,16 @@ Output file name is based on FILE-PATH default."
                    " "))))
 
 ;;;###autoload
+(defun germanium-install ()
+  "Install `germanium' via `go'."
+  (interactive)
+  (unless (yes-or-no-p "Install `germanium' via go?")
+    (error "Abort install"))
+  (unless (executable-find "go")
+    (error "Missing `go'.  Please ensure Emacs's PATH and the installing"))
+  (shell-command "go install github.com/matsuyoshi30/germanium/cmd/germanium@latest"))
+
+;;;###autoload
 (defun germanium-region-to-png (start end)
   "Generate a PNG file from current region between START and END."
   (interactive (if (use-region-p)
