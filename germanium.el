@@ -85,10 +85,9 @@ Output file name is based on FILE-PATH default."
                    (contents (buffer-substring-no-properties start end)))
              (let* ((command-string
                      (germanium--exec-command file-path contents)))
-               (shell-command-to-string command-string)
-               (message "Generated image")))
-      (error "Need to select region"))
-    (error "Current buffer is not associated with any file")))
+               (if (not (= 0 (shell-command command-string)))
+                   (error "Failed to generate image"))))
+      (error "Need to select region"))))
 
 ;;;###autoload
 (defun germanium-buffer-to-png ()
@@ -100,8 +99,8 @@ Output file name is based on FILE-PATH default."
               (file-path (expand-file-name file-name)))
         (let* ((command-string
                 (germanium--exec-command file-path nil)))
-          (shell-command-to-string command-string)
-          (message "Generated image"))
+          (if (not (= 0 (shell-command command-string)))
+              (error "Failed to generate image")))
     (error "Current buffer is not associated with any file"))))
 
 (provide 'germanium)
