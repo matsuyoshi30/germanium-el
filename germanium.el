@@ -82,7 +82,8 @@ Output file name is based on FILE-PATH default."
     (if (and start end)
          (if-let* ((file-name (buffer-file-name))
                    (file-path (expand-file-name file-name))
-                   (contents (buffer-substring-no-properties start end)))
+                   (contents
+                    (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end))))
              (let* ((command-string
                      (germanium--exec-command file-path contents)))
                (if (not (= 0 (shell-command command-string)))
