@@ -1,0 +1,25 @@
+#+author: matsuyoshi30
+#+date: <2021-08-21 土>
+
+* Description
+
+  Tool for generating image from source code using [[https://github.com/matsuyoshi30/germanium][germanium]].
+  It requires you to have the =germanium= command-line tool installed on your path.
+
+* Install
+
+  TODO
+
+* Usage
+
+** germanium-buffer-to-png
+
+   You can generate image from current buffer file via =M-x germanium-buffer-to-png=.
+
+* License
+
+  General Public License Version 3 (GPLv3)
+
+* Author
+
+  matsuyoshi30
