@@ -59,6 +59,7 @@
                          file-path)
                    " "))))
 
+;;;###autoload
 (defun germanium-region-to-png (start end)
   "Generate a PNG file from current region between START and END."
   (interactive (if (use-region-p)
@@ -77,6 +78,7 @@
       (error "Need to select region"))
     (error "Current buffer is not associated with any file")))
 
+;;;###autoload
 (defun germanium-buffer-to-png ()
   "Generate a PNG file from current buffer."
   (interactive)
