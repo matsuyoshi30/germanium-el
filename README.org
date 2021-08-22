@@ -21,9 +21,13 @@
 
    You can generate image from current buffer file via =M-x germanium-buffer-to-png=.
 
+   [[./assets/buffer.gif]]
+
 ** germanium-region-to-png
 
    You can generate image from region via =M-x germanium-region-to-png=. You need to select region.
+
+   [[./assets/region.gif]]
 
 * License
 
