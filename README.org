@@ -11,7 +11,7 @@
   Download germanium.el file with =git clone= or something, and add to your config.
 
   #+begin_src elisp
-  (add-to-list 'load-path "/path/to/germaniu.el directory")
+  (add-to-list 'load-path "/path/to/germanium.el directory")
   (require 'germanium)
   #+end_src
 
