@@ -1,5 +1,8 @@
+#+title: germanium.el - Generate image from source code
 #+author: matsuyoshi30
 #+date: <2021-08-21 土>
+
+[[https://melpa.org/#/germanium][file:https://melpa.org/packages/germanium-badge.svg]]
 
 * Description
 
@@ -7,6 +10,12 @@
   It requires you to have the =germanium= command-line tool installed on your path.
 
 * Install
+
+** MELPA
+
+   =germanium.el= can be installed with package.el from MELPA.
+
+** Manual
 
   Download germanium.el file with =git clone= or something, and add to your config.
 
