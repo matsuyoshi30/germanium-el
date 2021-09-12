@@ -170,7 +170,8 @@ Output file name is based on FILE-PATH default."
                    (contents
                     (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end))))
              (germanium--exec-command file-path contents)
-           (user-error "Need to select region")))))
+           (user-error "Current buffer is not associated with any file"))
+      (user-error "Need to select region"))))
 
 ;;;###autoload
 (defun germanium-buffer-to-png ()
