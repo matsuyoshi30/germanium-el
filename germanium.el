@@ -151,9 +151,9 @@ Output file name is based on FILE-PATH default."
   "Install `germanium' via `go'."
   (interactive)
   (unless (yes-or-no-p "Install `germanium' via go?")
-    (error "Abort install"))
+    (user-error "Abort install"))
   (unless (executable-find "go")
-    (error "Missing `go'.  Please ensure Emacs's PATH and the installing"))
+    (user-error "Missing `go'.  Please ensure Emacs's PATH and the installing"))
   (shell-command "go install github.com/matsuyoshi30/germanium/cmd/germanium@latest"))
 
 ;;;###autoload
@@ -163,25 +163,25 @@ Output file name is based on FILE-PATH default."
                    (list (region-beginning) (region-end))
                  (list nil nil)))
   (if (not (commandp germanium-executable-path))
-      (error "`germanium' executable path not found")
+      (user-error "`germanium' executable path not found")
     (if (and start end)
          (if-let* ((file-name (buffer-file-name))
                    (file-path (expand-file-name file-name))
                    (contents
                     (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end))))
              (germanium--exec-command file-path contents)
-           (error "Need to select region")))))
+           (user-error "Need to select region")))))
 
 ;;;###autoload
 (defun germanium-buffer-to-png ()
   "Generate a PNG file from current buffer."
   (interactive)
   (if (not (commandp germanium-executable-path))
-      (error "`germanium' executable path not found")
+      (user-error "`germanium' executable path not found")
     (if-let* ((file-name (buffer-file-name))
               (file-path (expand-file-name file-name)))
         (germanium--exec-command file-path nil)
-      (error "Current buffer is not associated with any file"))))
+      (user-error "Current buffer is not associated with any file"))))
 
 (provide 'germanium)
 ;;; germanium.el ends here
