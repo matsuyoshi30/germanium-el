@@ -153,7 +153,7 @@ Output file name is based on FILE-PATH default."
   (unless (yes-or-no-p "Install `germanium' via go?")
     (user-error "Abort install"))
   (unless (executable-find "go")
-    (user-error "Missing `go'.  Please ensure Emacs's PATH and the installing"))
+    (user-error "Missing `go'.  Please ensure Emacs's PATH and is installed"))
   (shell-command "go install github.com/matsuyoshi30/germanium/cmd/germanium@latest"))
 
 ;;;###autoload
