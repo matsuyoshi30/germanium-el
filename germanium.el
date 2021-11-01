@@ -131,7 +131,7 @@ Output file name is based on FILE-PATH default."
                               "Style: "
                               germanium-available-styles
                               nil
-                              (not (null germanium-available-styles))
+                              germanium-available-styles
                               germanium-default-style))
                     (background-color
                      (read-string "Background color (RGB): "
