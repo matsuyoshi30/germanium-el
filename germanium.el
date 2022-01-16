@@ -65,6 +65,11 @@
   :type 'boolean
   :group 'germanium)
 
+(defcustom germanium-remove-extra-indentation t
+  "Set Whether to remove extra indentation when the command executed is for region."
+  :type 'boolean
+  :group 'germanium)
+
 (defcustom germanium-completion-function 'ido-completing-read
   "Function to use for completion.
 
