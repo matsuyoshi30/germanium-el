@@ -122,14 +122,14 @@ Supported options are `:line-number', `:window-access-bar' and `style'"
                   ,(when background-color (format "--background=%s" background-color))
                   ,(when style (format "--style=%s" style))))))
 
-(defun germanium--build-exec-command (file-path contents temp-file-path options)
+(defun germanium--build-exec-command (file-path temp-file-path options)
   "Build germanium execute command.
 It is from FILE-PATH or CONTENTS and TEMP-FILE-PATH with OPTIONS.
 
 Output file name is based on FILE-PATH default."
   (let ((output
           (concat (file-name-base file-path) ".png")))
-    (if contents
+    (if temp-file-path
         (mapconcat #'identity
                    (append
                     (list "cat"
@@ -148,7 +148,7 @@ Output file name is based on FILE-PATH default."
                   options)
                  " "))))
 
-(defun germanium--exec-command (file-path contents temp-file-path)
+(defun germanium--exec-command (file-path temp-file-path)
   "Execute germanium command with FILE-PATH, CONTENTS and TEMP-FILE-PATH."
   (interactive)
   (let ((command-string
@@ -165,12 +165,12 @@ Output file name is based on FILE-PATH default."
                                   germanium-background-color))
                     (show-line-number (yes-or-no-p "Add line number? "))
                     (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
-                (germanium--build-exec-command file-path contents temp-file-path
+                (germanium--build-exec-command file-path temp-file-path
                                                (germanium--build-command-options-string :style style
                                                                                         :background-color background-color
                                                                                         :line-number show-line-number
                                                                                         :window-access-bar show-window-access-bar)))
-            (germanium--build-exec-command file-path contents temp-file-path (germanium--build-command-options-string)))))
+            (germanium--build-exec-command file-path temp-file-path (germanium--build-command-options-string)))))
     (shell-command command-string)))
 
 ;;;###autoload
@@ -199,7 +199,7 @@ Output file name is based on FILE-PATH default."
                    (germanium--remove-extra-indentation (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end)))))
             (progn
               (write-region contents nil temp-file-path 'append)
-              (germanium--exec-command file-path contents temp-file-path)
+              (germanium--exec-command file-path temp-file-path)
               (delete-file temp-file-path))
           (user-error "Current buffer is not associated with any file"))
       (user-error "Need to select region"))))
@@ -212,7 +212,7 @@ Output file name is based on FILE-PATH default."
       (user-error "`germanium' executable path not found")
     (if-let* ((file-name (buffer-file-name))
               (file-path (expand-file-name file-name)))
-        (germanium--exec-command file-path nil nil)
+        (germanium--exec-command file-path nil)
       (user-error "Current buffer is not associated with any file"))))
 
 (provide 'germanium)
