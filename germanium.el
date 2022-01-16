@@ -132,6 +132,7 @@ Output file name is based on FILE-PATH default."
         (mapconcat #'identity
                    (append
                     (list "echo"
+                          "-E"
                           (shell-quote-argument contents)
                           "|"
                           germanium-executable-path
