@@ -122,8 +122,9 @@ Supported options are `:line-number', `:window-access-bar' and `style'"
                   ,(when background-color (format "--background=%s" background-color))
                   ,(when style (format "--style=%s" style))))))
 
-(defun germanium--build-exec-command (file-path contents options)
-  "Build germanium execute command from FILE-PATH or CONTENTS with OPTIONS.
+(defun germanium--build-exec-command (file-path contents temp-file-path options)
+  "Build germanium execute command.
+It is from FILE-PATH or CONTENTS and TEMP-FILE-PATH with OPTIONS.
 
 Output file name is based on FILE-PATH default."
   (let ((output
@@ -131,8 +132,8 @@ Output file name is based on FILE-PATH default."
     (if contents
         (mapconcat #'identity
                    (append
-                    (list "echo"
-                          (shell-quote-argument contents)
+                    (list "cat"
+                          temp-file-path
                           "|"
                           germanium-executable-path
                           "--output" output
@@ -147,8 +148,8 @@ Output file name is based on FILE-PATH default."
                   options)
                  " "))))
 
-(defun germanium--exec-command (file-path contents)
-  "Execute germanium command with FILE-PATH and CONTENTS."
+(defun germanium--exec-command (file-path contents temp-file-path)
+  "Execute germanium command with FILE-PATH, CONTENTS and TEMP-FILE-PATH."
   (interactive)
   (let ((command-string
           (if germanium-check-options-each-execute-command
@@ -164,12 +165,12 @@ Output file name is based on FILE-PATH default."
                                   germanium-background-color))
                     (show-line-number (yes-or-no-p "Add line number? "))
                     (show-window-access-bar (yes-or-no-p "Add window access bar? ")))
-                (germanium--build-exec-command file-path contents
+                (germanium--build-exec-command file-path contents temp-file-path
                                                (germanium--build-command-options-string :style style
                                                                                         :background-color background-color
                                                                                         :line-number show-line-number
                                                                                         :window-access-bar show-window-access-bar)))
-            (germanium--build-exec-command file-path contents (germanium--build-command-options-string)))))
+            (germanium--build-exec-command file-path contents temp-file-path (germanium--build-command-options-string)))))
     (shell-command command-string)))
 
 ;;;###autoload
@@ -191,12 +192,16 @@ Output file name is based on FILE-PATH default."
   (if (not (commandp germanium-executable-path))
       (user-error "`germanium' executable path not found")
     (if (and start end)
-         (if-let* ((file-name (buffer-file-name))
-                   (file-path (expand-file-name file-name))
-                   (contents
-                    (germanium--remove-extra-indentation (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end)))))
-             (germanium--exec-command file-path contents)
-           (user-error "Current buffer is not associated with any file"))
+        (if-let* ((file-name (buffer-file-name))
+                  (file-path (expand-file-name file-name))
+                  (temp-file-path (make-temp-file "germanium-region"))
+                  (contents
+                   (germanium--remove-extra-indentation (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end)))))
+            (progn
+              (write-region contents nil temp-file-path 'append)
+              (germanium--exec-command file-path contents temp-file-path)
+              (delete-file temp-file-path))
+          (user-error "Current buffer is not associated with any file"))
       (user-error "Need to select region"))))
 
 ;;;###autoload
@@ -207,7 +212,7 @@ Output file name is based on FILE-PATH default."
       (user-error "`germanium' executable path not found")
     (if-let* ((file-name (buffer-file-name))
               (file-path (expand-file-name file-name)))
-        (germanium--exec-command file-path nil)
+        (germanium--exec-command file-path nil nil)
       (user-error "Current buffer is not associated with any file"))))
 
 (provide 'germanium)
