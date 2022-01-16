@@ -65,6 +65,11 @@
   :type 'boolean
   :group 'germanium)
 
+(defcustom germanium-remove-extra-indentation t
+  "Set Whether to remove extra indentation when the command executed is for region."
+  :type 'boolean
+  :group 'germanium)
+
 (defcustom germanium-completion-function 'ido-completing-read
   "Function to use for completion.
 
@@ -81,6 +86,27 @@ Function needs to have a signature similar to `ido-completing-read', for example
                                (mapconcat #'shell-quote-argument
                                           (list germanium-executable-path "--list-styles")
                                           " ")))))
+
+(defun germanium--indent-length (str)
+  "Function to count indent in STR."
+  (letrec ((f (lambda (lst acc)
+                 (if (eq 32 (car lst)) ;; only for whitespace
+                     (funcall f (cdr lst) (1+ acc))
+                   acc))))
+    (funcall f (coerce str 'list) 0)))
+
+(defun germanium--remove-extra-indentation (contents)
+  "Remove extra indentation from CONTENTS."
+  (if (and contents germanium-remove-extra-indentation)
+      (let* ((lines (split-string contents "\n"))
+             (minidx (apply #'min
+                         (mapcar #'(lambda (x) (germanium--indent-length x))
+                                 (remove-if (lambda (x) (string= x "")) lines)))))
+        (mapconcat #'identity
+                   (mapcar #'(lambda (x) (if (>= (length x) minidx) (substring x minidx)))
+                           lines)
+                   "\n"))
+    contents))
 
 (defun germanium--build-command-options-string (&rest args)
   "Build germanium command options string from ARGS.
@@ -168,7 +194,7 @@ Output file name is based on FILE-PATH default."
          (if-let* ((file-name (buffer-file-name))
                    (file-path (expand-file-name file-name))
                    (contents
-                    (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end))))
+                    (germanium--remove-extra-indentation (replace-regexp-in-string "\n$" "" (buffer-substring-no-properties start end)))))
              (germanium--exec-command file-path contents)
            (user-error "Current buffer is not associated with any file"))
       (user-error "Need to select region"))))
