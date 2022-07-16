@@ -29,6 +29,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'subr-x)
 
 (defgroup germanium nil
@@ -93,7 +94,7 @@ Function needs to have a signature similar to `ido-completing-read', for example
                  (if (eq 32 (car lst)) ;; only for whitespace
                      (funcall f (cdr lst) (1+ acc))
                    acc))))
-    (funcall f (coerce str 'list) 0)))
+    (funcall f (cl-coerce str 'list) 0)))
 
 (defun germanium--remove-extra-indentation (contents)
   "Remove extra indentation from CONTENTS."
@@ -101,7 +102,7 @@ Function needs to have a signature similar to `ido-completing-read', for example
       (let* ((lines (split-string contents "\n"))
              (minidx (apply #'min
                          (mapcar #'(lambda (x) (germanium--indent-length x))
-                                 (remove-if (lambda (x) (string= x "")) lines)))))
+                                 (cl-remove-if (lambda (x) (string= x "")) lines)))))
         (mapconcat #'identity
                    (mapcar #'(lambda (x) (if (>= (length x) minidx) (substring x minidx)))
                            lines)
